@@ -3,11 +3,15 @@ import mitt from "mitt";
 import { platform } from "os";
 import * as Core from "./Core";
 import * as Extensions from "./Extensions";
+import { performance } from "perf_hooks";
+
+console.log(performance.now());
 
 (async () => {
     await Electron.app.whenReady();
-
+    
     Core.SingleInstanceLockModule.bootstrap(Electron.app);
+    console.log(performance.now());
     Core.DockModule.bootstrap(Electron.app);
 
     const dependencyRegistry = Core.DependencyRegistryModule.bootstrap();
