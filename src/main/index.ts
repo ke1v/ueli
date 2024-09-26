@@ -1,13 +1,33 @@
-import * as Electron from "electron";
-import mitt from "mitt";
-import { platform } from "os";
-import * as Core from "./Core";
-import * as Extensions from "./Extensions";
+import { performance, PerformanceObserver } from "perf_hooks";
+
+const perfObserver = new PerformanceObserver((items) => {
+    items.getEntries().forEach((entry) => {
+      console.log(entry)
+    })
+  })
+  
+perfObserver.observe({ entryTypes: ["measure"], buffered: true });
 
 (async () => {
+    performance.mark("beforeImport");
+    const Electron = await import("electron");
+    const mitt = (await import("mitt")).default;
+    const platform = (await import("os")).platform;
+    const Core = await import("./Core");
+    const Extensions = await import("./Extensions");
+    performance.mark("afterImport");
+
     await Electron.app.whenReady();
 
+    performance.mark("afterReady");
+
     Core.SingleInstanceLockModule.bootstrap(Electron.app);
+
+    performance.mark("afterSIL");
+
+    performance.measure("import", "beforeImport", "afterImport");
+    performance.measure("singleInstanceLock", "afterReady", "afterSIL");
+
     Core.DockModule.bootstrap(Electron.app);
 
     const dependencyRegistry = Core.DependencyRegistryModule.bootstrap();
