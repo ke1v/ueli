@@ -3,15 +3,26 @@ import mitt from "mitt";
 import { platform } from "os";
 import * as Core from "./Core";
 import * as Extensions from "./Extensions";
-import { performance } from "perf_hooks";
+import { performance, PerformanceObserver } from "perf_hooks";
 
-console.log(performance.now());
+const perfObserver = new PerformanceObserver((items) => {
+    items.getEntries().forEach((entry) => {
+      console.log(entry)
+    })
+  })
+  
+perfObserver.observe({ entryTypes: ["measure"], buffered: true });
+
+performance.mark("start");
 
 (async () => {
     await Electron.app.whenReady();
-    
+
     Core.SingleInstanceLockModule.bootstrap(Electron.app);
-    console.log(performance.now());
+
+    performance.mark("afterSIL");
+    performance.measure("singleInstanceLock", "start", "afterSIL");
+
     Core.DockModule.bootstrap(Electron.app);
 
     const dependencyRegistry = Core.DependencyRegistryModule.bootstrap();
